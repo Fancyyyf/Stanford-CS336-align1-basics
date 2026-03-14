@@ -160,4 +160,8 @@ cython_debug/
 #.idea/
 
 .ruff_cache/
-*.zip
+*.zipdata/
+cache/
+*.pkl
+*.txt
+cs336_basics/cache
