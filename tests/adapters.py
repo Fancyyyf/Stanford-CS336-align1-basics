@@ -9,6 +9,8 @@ import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
 
+from cs336_basics import bpe
+
 
 def run_linear(
     d_in: int,
@@ -589,4 +591,10 @@ def run_train_bpe(
                 representing that <token1> was merged with <token2>.
                 Merges are ordered by order of creation.
     """
-    raise NotImplementedError
+    # 直接将参数透传给你的底层引擎
+    # 注意 kwargs 的兼容，防止测试框架传入预料之外的参数导致崩溃
+    return bpe.bpe_workshop(
+        input_path=input_path,
+        vocab_size=vocab_size,
+        special_tokens=special_tokens
+    )

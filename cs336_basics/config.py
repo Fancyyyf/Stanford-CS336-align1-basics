@@ -5,4 +5,6 @@ from pathlib import Path
 # .parent 获得上一级目录
 root_dir = Path(__file__).resolve().parent.parent
 
-data_path = root_dir / "data" / "TinyStoriesV2-GPT4-valid.txt"
+data_path = root_dir / "data" / "owt_train.txt"
+
+vocab_size = 10000

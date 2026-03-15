@@ -3,6 +3,8 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/cs336_basics/pretoken_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/cs336_basics/vocab_merge_cache" />
     </content>
     <orderEntry type="jdk" jdkName="uv (Stanford-CS336-align1-basics)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
