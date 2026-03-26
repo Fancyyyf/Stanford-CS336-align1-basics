@@ -9,8 +9,10 @@ import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
 
-from cs336_basics import bpe
-
+from cs336_basics import bpe_train
+from cs336_basics import tokenizer
+from cs336_basics import linear
+from cs336_basics import embedding
 
 def run_linear(
     d_in: int,
@@ -30,8 +32,16 @@ def run_linear(
     Returns:
         Float[Tensor, "... d_out"]: The transformed output of your linear module.
     """
+    # 实例化一个空壳 Linear(随机参数)
+    layer = linear.Linear(in_features=d_in, out_features=d_out)
 
-    raise NotImplementedError
+    # 覆盖weight,使用 load_state_dict
+    layer.load_state_dict({"weight": weights})
+
+    # 触发 __call__，运行前向传播
+    output = layer(in_features)
+
+    return output
 
 
 def run_embedding(
@@ -53,7 +63,16 @@ def run_embedding(
         Float[Tensor, "... d_model"]: Batch of embeddings returned by your Embedding layer.
     """
 
-    raise NotImplementedError
+    # 实例化一个embedding
+    embed = embedding.Embedding(vocab_size, d_model)
+
+    # 覆盖weight,使用 load_state_dict
+    embed.load_state_dict({"weight": weights})
+
+    # 触发 __call__，运行前向传播
+    output = embed(token_ids)
+
+    return output
 
 
 def run_swiglu(
@@ -561,7 +580,7 @@ def get_tokenizer(
     Returns:
         A BPE tokenizer that uses the provided vocab, merges, and special tokens.
     """
-    raise NotImplementedError
+    return tokenizer.Tokenizer(vocab=vocab, merges=merges, special_tokens=special_tokens)
 
 
 def run_train_bpe(
@@ -593,7 +612,7 @@ def run_train_bpe(
     """
     # 直接将参数透传给你的底层引擎
     # 注意 kwargs 的兼容，防止测试框架传入预料之外的参数导致崩溃
-    return bpe.bpe_workshop(
+    return bpe_train.bpe_workshop(
         input_path=input_path,
         vocab_size=vocab_size,
         special_tokens=special_tokens

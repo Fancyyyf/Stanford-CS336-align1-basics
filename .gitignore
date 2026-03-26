@@ -54,6 +54,7 @@ pretoken_cache
 vocab_merge_cache
 cs336_basics/pretoken_cache
 cs336_basics/vocab_merge_cache
+data
 
 # Translations
 *.mo

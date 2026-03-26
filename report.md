@@ -108,5 +108,68 @@ Explanation: This sequence does not decode to any character because the byte `\x
 ⏱️ 统计分析耗时: 0.0019 秒
 ✨ 总运行耗时: 1657.4172 秒
 
+# Q4
+![img_3.png](img_3.png)
+
+## Ans1
+/home/fancy/.local/bin/uv run /home/fancy/CS336/Stanford-CS336-align1-basics/.venv/bin/python /home/fancy/CS336/Stanford-CS336-align1-basics/cs336_basics/experiment_ch2.py 
+🚀 正在加载 Tokenizer 模型...
+✅ 模型加载成功！
+
+📄 正在从文本中抽取 10 篇 Documents...
+
+========================================
+📊 TinyStories (10K Vocab) 测试结果:
+   - 总字节数 (Bytes): 1,853
+   - 总 Token 数 (IDs): 452
+   - 💡 压缩比 (Compression Ratio): 4.10 bytes/token
+
+📊 OpenWebText (32K Vocab) 测试结果:
+   - 总字节数 (Bytes): 7,685
+   - 总 Token 数 (IDs): 1,934
+   - 💡 压缩比 (Compression Ratio): 3.97 bytes/token
+
+========================================
+
+## Ans2
+----------------------------------------
+📊 【跨域实验】OpenWebText 文本 + TinyStories 词表 测试结果:
+   - 总字节数 (Bytes): 7,685
+   - 总 Token 数 (IDs): 2,316
+   - 💡 压缩比 (Compression Ratio): 3.32 bytes/token
+
+========================================
+压缩比显著下降（比如从 4.0 暴跌到 2.5 左右），产生的 Token 数量激增！
+
+为什么会这样？（Qualitative Description）
+因为 TinyStories 的词表是在 3-4 岁儿童睡前故事上训练的，里面全都是 "apple", "happy", "run" 这种极其简单的词汇。
+而 OpenWebText 是全网抓取的复杂文本，充满了 "cryptocurrency", "quantum", "bureaucracy" 这种高级词汇或者代码片段。
+
+当 TinyStories 的 Tokenizer 遇到这些它“根本不认识”的复杂单词时，它无法进行长字符串合并，
+只能被迫退化，把这些长单词打碎成一个个极其短小的字母片段，甚至是单个字节（Bytes）。切得越碎，产生的 Token 数量就越多，压缩效率自然就暴跌了。
+
+This occurs because the TinyStories vocabulary lacks complex, domain-specific terminology, 
+forcing the tokenizer to aggressively fragment unknown words into highly inefficient, short subwords or individual bytes.
 
 
+## Ans3
+=======================================
+⏱️ 正在进行吞吐量压测 (读取前 1MB 文本)...
+   - 测试数据量: 1.01 MB
+   - 耗时: 0.92 秒
+   - 🚀 吞吐量: 1,148,278 Bytes/sec (1.10 MB/s)
+   - ⏳ 估算处理 The Pile (825GB) 耗时: 214.3 小时 (约 8.9 天)
+
+## Ans4
+🧠 为什么 uint16 是绝佳选择？（原理解析）
+
+作为架构师，我们要对数据类型的物理边界极其敏感：
+
+数值范围： uint16（16位无符号整数）能表示的数值范围是 0 到 65,535。
+    
+我们的需求： TinyStories 的词表大小是 10,000，OpenWebText 是 32,000。
+            这两个数字都稳稳地落在了 65,535 的安全边界之内，绝对不会发生数据溢出（Overflow）。
+
+工程收益： Python 默认的整数或 Numpy 默认的 int32 / int64 会为每个 Token 消耗 4 到 8 个字节。
+            改用 uint16，每个 Token 只占 2 个字节。在动辄几亿、几十亿 Token 的大模型训练中，
+            这一个简单的参数修改，直接将硬盘占用、内存加载压力和 GPU 显存占用砍掉了一半以上，且没有任何信息损失！
