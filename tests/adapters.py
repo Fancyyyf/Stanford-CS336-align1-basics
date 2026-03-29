@@ -13,6 +13,11 @@ from cs336_basics import bpe_train
 from cs336_basics import tokenizer
 from cs336_basics import linear
 from cs336_basics import embedding
+from cs336_basics import rms_norm
+from cs336_basics import swiglu
+from cs336_basics import rope
+from cs336_basics import attention
+
 
 def run_linear(
     d_in: int,
@@ -104,7 +109,15 @@ def run_swiglu(
     # swiglu.w1.weight.data = w1_weight
     # swiglu.w2.weight.data = w2_weight
     # swiglu.w3.weight.data = w3_weight
-    raise NotImplementedError
+
+    layer = swiglu.FFN(d_model=d_model, d_ff=d_ff)
+
+    # 指针覆盖
+    layer.w1.weight.data = w1_weight
+    layer.w2.weight.data = w2_weight
+    layer.w3.weight.data = w3_weight
+
+    return layer(in_features)
 
 
 def run_scaled_dot_product_attention(
@@ -125,7 +138,7 @@ def run_scaled_dot_product_attention(
     Returns:
         Float[Tensor, " ... queries d_v"]: Output of SDPA
     """
-    raise NotImplementedError
+    return attention.scaled_dot_product_attention(Q, K, V, mask)
 
 
 def run_multihead_self_attention(
@@ -221,7 +234,11 @@ def run_rope(
     Returns:
         Float[Tensor, " ... sequence_length d_k"]: Tensor with RoPEd input.
     """
-    raise NotImplementedError
+
+    layer_rope = rope.RotaryPositionalEmbedding(theta=theta, d_k=d_k, max_seq_len=max_seq_len)
+
+    return layer_rope(in_query_or_key, token_positions)
+
 
 
 def run_transformer_block(
@@ -321,7 +338,7 @@ def run_transformer_lm(
         num_heads (int): Number of heads to use in multi-headed attention. `d_model` must be
             evenly divisible by `num_heads`.
         d_ff (int): Dimensionality of the feed-forward inner layer (section 3.3).
-        rope_theta (float): The RoPE $\Theta$ parameter.
+        rope_theta (float): The RoPE $\theta$ parameter.
         weights (dict[str, Tensor]):
             State dict of our reference implementation. {num_layers} refers to an
             integer between `0` and `num_layers - 1` (the layer index).
@@ -399,7 +416,14 @@ def run_rmsnorm(
         Float[Tensor,"... d_model"]: Tensor of with the same shape as `in_features` with the output of running
         RMSNorm of the `in_features`.
     """
-    raise NotImplementedError
+    # 实例化一个rms_norm
+    rms = rms_norm.RMSNorm(d_model, eps)
+
+    # 覆盖weight,使用 load_state_dict
+    rms.load_state_dict({"weight": weights})
+
+    # 触发 __call__，运行前向传播
+    return rms(in_features)
 
 
 def run_silu(in_features: Float[Tensor, " ..."]) -> Float[Tensor, " ..."]:
@@ -452,7 +476,8 @@ def run_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, "
         Float[Tensor, "..."]: Tensor of with the same shape as `in_features` with the output of
         softmax normalizing the specified `dim`.
     """
-    raise NotImplementedError
+
+    return attention.softmax(in_features, dim)
 
 
 def run_cross_entropy(
